@@ -27,8 +27,9 @@ app.configure(function(){
   app.use(require('stylus').middleware(__dirname + '/public'))
   app.use(express.static(path.join(__dirname, 'public')))
 
+  // __dirname: the path of the direcotry that the currently executing script resides in.
   var package = require(path.resolve(__dirname, './package.json'))
-  
+
   // Setup local variables to be available in the views.
   app.locals.title = "Online Markdown Editor - Dillinger, the Last Markdown Editor ever."
   app.locals.description = "Dillinger is an Online cloud based HTML5 filled Markdown Editor. Sync with Dropbox and Github. 100% Open Source!"
@@ -36,7 +37,7 @@ app.configure(function(){
   app.locals.app_version = package.version
   app.locals.env = process.env.NODE_ENV
   app.locals.readme = fs.readFileSync( path.resolve(__dirname, './README.md'), 'utf-8')
-  
+
   // Compress/concat files for deploy env...
   // Need to run this locally BEFORE deploying
   // to nodejitsu
@@ -45,9 +46,15 @@ app.configure(function(){
     cleaner()
     setTimeout(smoosher,750)
   }
-  
+
 })
 
+//[Background of app.configure]Conditionally invoke callback when
+// env matches app.get('env'), aka process.env.NODE_ENV.
+// This method remains for legacy reason, and is effectively an if statement
+// as illustrated in the following snippets.
+// if ('development' == app.get('env') {app.set(.....)}
+// These functions are not required in order to use app.set() and other configuration methods.
 app.configure('development', function(){
   app.use(express.errorHandler())
 })
