@@ -175,6 +175,8 @@ function smoosher(){
                         { "src": "./public/js/ace.js", "jshint": false}, 
                         { "src": "./public/js/mode-markdown.js", "jshint": false}, 
                         { "src": "./public/js/showdown.js", "jshint": false},
+                        //对于highlight库，没有unpack的js文件
+                        { "src": "./public/js/highlight.min.js", "jshint": false},
                         { "src": "./public/js/keymaster.js", "jshint": false}],
       "dillinger": [ "./public/js/dillinger.js" ]
     },
