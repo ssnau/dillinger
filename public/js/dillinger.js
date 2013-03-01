@@ -291,6 +291,7 @@ $(function(){
   function initAce(){
     
     editor = ace.edit("editor")
+    editor.setKeyboardHandler("ace/keyboard/vim");
     
   } // end initAce
 

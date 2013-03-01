@@ -173,6 +173,7 @@ function smoosher(){
       "DIST_DIR": "./public/js",
       "dependencies": [ { "src": "./public/js/bootstrap.js", "jshint": false}, 
                         { "src": "./public/js/ace.js", "jshint": false}, 
+                        { "src": "./public/js/keybinding-vim.js", "jshint": false}, 
                         { "src": "./public/js/mode-markdown.js", "jshint": false}, 
                         { "src": "./public/js/showdown.js", "jshint": false},
                         //对于highlight库，没有unpack的js文件
