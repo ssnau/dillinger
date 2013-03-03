@@ -5090,3 +5090,289 @@ noscript p {
     page-break-after: avoid;
   }
 }
+/* app specific */
+.search-query.file-search {
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+.nav .sync {
+  font-size: 20px;
+}
+#folder {
+  position: absolute;
+  padding: 15px 0px 0px 10px;
+  margin-right: 5px;
+  left: 0px;
+  top: 2px;
+  bottom: 10px;
+  width: 260px;
+  background: rgba(255,255,255,0.8);
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -webkit-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -o-box-flex: 1;
+  box-flex: 1;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+#file {
+  position: absolute;
+  margin-right: 5px;
+  top: 2px;
+  left: 270px;
+  bottom: 10px;
+  width: 300px;
+  background: rgba(255,255,255,0.8);
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -webkit-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -o-box-flex: 1;
+  box-flex: 1;
+  overflow-y: scroll;
+}
+#content {
+  position: absolute;
+  left: 570px;
+  top: 2px;
+  bottom: 5px;
+  width: 500px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -webkit-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  box-shadow: 0px 0px 80px rgba(0,0,0,0.3) inset 0 0 5px rgba(0,0,0,0.6);
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -o-box-flex: 1;
+  box-flex: 1;
+}
+#editor,
+#preview {
+  top: 0px;
+}
+.css-treeview ul,.css-treeview li
+  {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+  }
+  .css-treeview li {
+      //margin: 4px 0px 4px 0px; /* use margin because it can collapse */
+      /*disable margin because it may cause user click on its parent*/
+      padding-top: 4px;
+  }
+
+  .css-treeview input
+  {
+      position: absolute;
+      opacity: 0;
+  }
+
+  .css-treeview
+  {
+      font: normal 11px "Segoe UI", Arial, Sans-serif;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      user-select: none;
+      padding:0px 10px 0px 10px;
+  }
+
+  .css-treeview a
+  {
+      color: #00f;
+      text-decoration: none;
+  }
+
+  .css-treeview a:hover
+  {
+      text-decoration: underline;
+  }
+
+  .css-treeview input + label + ul
+  {
+      margin: 0 0 0 22px;
+  }
+
+  .css-treeview input ~ ul
+  {
+      display: none;
+  }
+
+  .css-treeview label,.css-treeview label::before
+  {
+      cursor: pointer;
+  }
+
+  .css-treeview input:disabled + label
+  {
+      cursor: default;
+      opacity: .6;
+  }
+
+  .css-treeview input:checked:not(:disabled) ~ ul
+  {
+      display: block;
+  }
+
+  .css-treeview label,.css-treeview label::before
+  {
+      background: url("../img/filetree-icons.png") no-repeat;
+  }
+
+  .css-treeview label,.css-treeview a,.css-treeview label::before
+  {
+      display: inline-block;
+      height: 16px;
+      line-height: 16px;,vertical-align: middle;
+      margin:0px;
+  }
+
+  .css-treeview label
+  {
+      background-position: 18px 0;
+  }
+
+  .css-treeview label.current
+  {
+      background-color: #ccc;
+  }
+
+  .css-treeview label::before
+  {
+      content: "";
+      width: 16px;
+      margin: 0 22px 0 0;
+      vertical-align: middle;
+      background-position: 0 -32px;
+  }
+
+  .css-treeview label.empty::before
+  {
+      content: "";
+      width: 16px;
+      margin: 0 22px 0 0;
+      vertical-align: middle;
+      background-position: 999px -32px;
+  }
+
+  .css-treeview input:checked + label::before
+  {
+      background-position: 0 -16px;
+  }
+  /* override to an blank position if the folder is empty*/
+  .css-treeview input:checked + label.empty::before
+  {
+      background-position: 999px -16px;
+  }
+
+  /* webkit adjacent element selector bugfix */
+  @media screen and (-webkit-min-device-pixel-ratio:0)
+  {
+      .css-treeview
+      {
+          -webkit-animation: webkit-adjacent-element-selector-bugfix infinite 1s;
+      }
+
+      @-webkit-keyframes webkit-adjacent-element-selector-bugfix
+      {
+          from
+          {
+              padding: 0;
+          }
+          to
+          {
+              padding: 0;
+          }
+      }
+  }
+
+  ul.css-file-view {
+    list-style:none;
+    margin:5px 0 5px 5px;
+  }
+  .css-file-view li.item {
+    list-style: none;
+    cursor: pointer;
+    padding: 8px 5px 8px 5px;
+    border-bottom: solid 1px #ccc
+  }
+
+  .css-file-view li:hover.item {
+    background-color:rgba(220,220,220,0.5);
+  }
+
+  .css-file-view li.item.current {
+      background-color:#cee;
+  }
+
+  .css-file-view li.item .title {
+    font-size:14px;
+  }
+
+  .css-file-view li.item .property {
+    padding-top:4px;
+    font-size:12px;
+    color:rgba(96,134,159,0.9);
+  }
+  .css-file-view li.item .ctime {
+    
+  }
+
+  .css-file-view li.item .tag {
+    font-style:;
+  }
+
+  .css-file-view li.item .property .preview {
+    color:#999;
+}

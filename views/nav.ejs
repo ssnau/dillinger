@@ -1,25 +1,20 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container-fluid">
-      <a class="brand" href="#">Dillinger</a>
       <ul class="nav" role="navigation">
-        
-        <li class="dropdown">
-          <%- include dropbox %>
-        </li>
-        
-        <li class="dropdown">
-          <%- include github %>
-        </li>
-        <!--
-        <li class="dropdown">
-          <%- include evernote %>
-        </li>
-
-        <li class="dropdown">
-          <%- include google_drive %>
-        </li>
-        -->
+       <li class="dropdown" id="menutest1">
+        <a class="dropdown-toggle brand" data-toggle="dropdown" href="#menutest1"> Main </a>
+        <ul class="dropdown-menu">
+          <li><a href="#">1</a></li>
+          <li><a href="#">2</a></li>
+          <li><a href="#">3</a></li>
+          <li class="divider"></li>
+          <li><a href="#">4</a></li>
+        </ul>
+      </li>
+      <form class="navbar-search pull-left">
+        <input type="text" class="search-query file-search" placeholder="Search From Files">
+      </form> 
       </ul>
 
       <ul class="nav pull-right">

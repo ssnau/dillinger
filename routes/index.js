@@ -7,7 +7,7 @@ var path = require('path')
 
 // Show the home page
 exports.index = function(req, res){
-    res.render('index', indexConfig)
+    res.render('index', {})
 }
 
 // Show the not implemented yet page

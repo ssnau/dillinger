@@ -13,7 +13,7 @@ var express = require('express')
 var app = express()
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 8080)
+  app.set('port', process.env.PORT || 9420)
   app.set('views', __dirname + '/views')
   app.set('view engine', 'ejs')
   app.use(express.favicon())
@@ -178,6 +178,7 @@ function smoosher(){
                         { "src": "./public/js/showdown.js", "jshint": false},
                         //对于highlight库，没有unpack的js文件
                         { "src": "./public/js/highlight.min.js", "jshint": false},
+                        { "src": "./public/js/filemanager.js", "jshint": false},
                         { "src": "./public/js/keymaster.js", "jshint": false}],
       "dillinger": [ "./public/js/dillinger.js" ]
     },

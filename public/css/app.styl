@@ -1,0 +1,55 @@
+.search-query.file-search
+    border-radius 4px
+
+.nav .sync
+    font-size 20px
+
+$top = 2
+$folderWidth = 260
+#folder
+  position absolute
+  padding 15px 0px 0px 10px
+  margin-right: 5px;
+  left 0px
+  top unit($top, 'px')
+  bottom 10px
+  width unit($folderWidth, 'px')
+  background rgba(255,255,255,0.8)
+  borderRadius(4px)
+  boxShadow(0px 0px 80px rgba(0,0,0,0.30), inset 0 0 5px rgba(0,0,0,0.6))
+  boxSizing()
+  boxFlex()
+  overflow scroll
+  overflow-x hidden
+
+$fileWidth = 300
+#file
+  position absolute
+  margin-right: 5px;
+  top unit($top, 'px')
+  left unit($folderWidth +  10, 'px')
+  bottom 10px
+  width unit($fileWidth, 'px')
+  background rgba(255,255,255,0.8)
+  borderRadius(4px)
+  boxShadow(0px 0px 80px rgba(0,0,0,0.30), inset 0 0 5px rgba(0,0,0,0.6))
+  boxSizing()
+  boxFlex()
+  overflow-y scroll
+
+$contentWidth = 500
+#content
+  position absolute
+  left unit($folderWidth + $fileWidth + 10, 'px')
+  top unit($top, 'px')
+  bottom 5px
+  width unit($contentWidth, 'px')
+  borderRadius(4px)
+  boxShadow(0px 0px 80px rgba(0,0,0,0.30), inset 0 0 5px rgba(0,0,0,0.6))
+  boxSizing()
+  boxFlex()
+
+#editor, #preview
+  top 0px
+
+
