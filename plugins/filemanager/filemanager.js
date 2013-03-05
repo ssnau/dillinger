@@ -53,6 +53,7 @@ function traverseFolder(root, config) {
             if (config.file_filter && config.file_filter.test(baseName)) {
                 data.type = T_FILE;
             } else {
+                console.log("ignoring " + baseName);
                 return null;
             }
         	//TODO:

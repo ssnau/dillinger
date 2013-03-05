@@ -31,6 +31,7 @@ $(function(){
     
   // Cache some shit
   var $theme = $('#theme-list')
+    , $editor = $('#editor')
     , $preview = $('#preview')
     , $autosave = $('#autosave')
     , $import_github = $('#import_github')
@@ -39,7 +40,8 @@ $(function(){
     , $content = $("#content")
     , $doc = $(document)
 
-    
+  var selectingfile = null //file we currently viewing, may not be editing
+    ,  editingfile = null  //file we currently editing & viewing
   // Hash of themes and their respective background colors
   var bgColors = 
     {
@@ -263,6 +265,8 @@ $(function(){
       initAce()
       
       initUi()
+
+      hideEditor()
       
       converter = new Showdown.converter()
       
@@ -296,10 +300,23 @@ $(function(){
       });
       fileManager.on("fileSelect", function(data) {
         var file_id = data['id'];
+        var selectingfile = data;
         socket.emit('request.file.data', file_id);     
         socket.on('open.file.data', function(data) {
           editor.setValue(data)
         });     
+      });
+      fileManager.on("fileDBClick", function(data){
+        var file_id = data['id'];
+        if (selectingfile && selectingfile['id'] == file_id) {
+          //DO NOTHING
+        } else {
+          socket.emit('request.file.data', file_id);     
+          socket.on('open.file.data', function(data) {
+            editor.setValue(data)
+          });     
+        }
+        showEditor();
       });
       
     }
@@ -623,6 +640,22 @@ $(function(){
     // TODO: ACTUALLY SHOW A SAD PANDA.
     alert('Sad Panda - No localStorage for you!')
   }
+
+  function showEditor() {
+    $editor.css("opacity", 1);
+    $preview.css("left", "50%");
+  }
+
+  function hideEditor() {
+    $editor.css("opacity", 0);
+    $preview.css("left", 0);
+
+  }
+
+  function getFileContent(id) {
+
+  }
+
 
   /**
    * Show the modal for the "About Dillinger" information.

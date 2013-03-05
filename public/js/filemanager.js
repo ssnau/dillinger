@@ -232,7 +232,7 @@ var FileManager = (function() {
 			var me = this;
 			switch(eventName) {
 				case "fileNameChange": 
-					$(me.fln).on('keyup', '.title', function(e) {
+					$(me.fln).on('blur', '.title', function(e) {
 						var ndTitle = $(this),
 							ndFileLi = ndTitle.parent(),
 							id = ndFileLi.attr('id'),
@@ -246,6 +246,13 @@ var FileManager = (function() {
 					});
 					break;
 				case "fileSelect":
+				case "fileClick":
+					$(me.fln).on('click', 'li.item', function(e){
+						var id = $(this).attr('id');
+						fn(me.pds[id]);
+					});
+					break;
+				case "fileDBClick":
 					$(me.fln).on('click', 'li.item', function(e){
 						var id = $(this).attr('id');
 						fn(me.pds[id]);
