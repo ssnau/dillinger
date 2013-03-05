@@ -224,7 +224,11 @@ var FileManager = (function() {
 			result = getFromTemplate(root_folder_tmpl, {'content': result})
 			$(this.fn).find('.folder-tree').html(result);//clear first, and then assign the result
 		},
-		on: function(eventName, fn) { //custom event for user to bind
+		/**
+		 * custom event for user to bind, fn should accept two parameters.
+		 * fn (data, extraParams), data represent for the pds data, and extraParams contain specific info
+		 */
+		on: function(eventName, fn) { 
 			var me = this;
 			switch(eventName) {
 				case "fileNameChange": 
@@ -238,13 +242,14 @@ var FileManager = (function() {
 						if (newTitle != oldTitle) {
 							fn(me.pds[id], newTitle, oldTitle);
 						}
+						e.stopPropagation();
 					});
 					break;
-				case "fileSelected":
-					var ndTitle = $(this),
-						ndFileLi = ndTitle.parent(),
-						id = ndFileLi.attr('id');
-					fn(me.pds.id);
+				case "fileSelect":
+					$(me.fln).on('click', 'li.item', function(e){
+						var id = $(this).attr('id');
+						fn(me.pds[id]);
+					});
 					break;
 			}
 		}

@@ -9,8 +9,14 @@ var express = require('express')
   , path = require('path')
   , fs = require('fs')
   , walkdir = require('walkdir')
+  , io = require('socket.io')
+  , fm = require('./plugins/filemanager/filemanager.js')
+  , app_config = require("./app-config.json")
 
-var app = express()
+console.log(app_config)
+/*declare app without var so that each module can access it*/
+app = express()
+app.set("config", app_config)
 
 app.configure(function(){
   app.set('port', process.env.PORT || 9420)
@@ -63,44 +69,6 @@ app.get('/', routes.index)
 
 app.get('/not-implemented', routes.not_implemented)
 
-/* Begin Dropbox */
-
-app.get('/oauth/dropbox', routes.oauth_dropbox)
-
-app.get('/unlink/dropbox', routes.unlink_dropbox)
-
-app.get('/import/dropbox', routes.import_dropbox)
-
-// app.get('/account/dropbox', routes.account_info_dropbox)
-
-app.post('/fetch/dropbox', routes.fetch_dropbox_file)
-
-app.post('/save/dropbox', routes.save_dropbox)
-
-/* End Dropbox */
-
-/* Begin Github */
-
-app.get('/oauth/github', routes.oauth_github)
-
-app.get('/unlink/github', routes.unlink_github)
-
-// app.get('/account/github', routes.account_info_github)
-
-app.post('/import/github/repos', routes.import_github_repos)
-
-app.post('/import/github/branches', routes.import_github_branches)
-
-app.post('/import/github/tree_files', routes.import_tree_files)
-
-app.post('/import/github/file', routes.import_github_file)
-
-app.post('/save/github', routes.save_github)
-
-/* End Github */
-
-
-
 /* Dillinger Actions */
 // save a markdown file and send header to download it directly as response 
 app.post('/factory/fetch_markdown', routes.fetch_md)
@@ -115,10 +83,28 @@ app.post('/factory/fetch_html', routes.fetch_html)
 app.get('/files/html/:html', routes.download_html)
 
 
-http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app);
+server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'))
   console.log("\nhttp://localhost:" + app.get('port') + "\n")
 })
+
+/**
+ * Soket.io for real time connection
+ */
+var io = io.listen(server);
+io.set('log level', 1);
+io.sockets.on('connection', function(socket){
+  console.log('Client Connected');
+  socket.on('request.file.data', function(id){
+      var p = path.join(app.get('config')['file_root'], id.substr(fm.id_prefix.length));
+      var str = fs.readFileSync(p, 'utf8');
+      socket.emit('open.file.data', str);
+  });
+  socket.on('disconnect', function(){
+    console.log('Client Disconnected.');
+  });
+});
 
 /**
   Some helpers for deployment, cleaning up...
@@ -167,7 +153,7 @@ function smoosher(){
       "expr": true, 
       "lastsemic": true, 
       "laxbreak":true,
-      "regexdash": true,
+      "regexdash": true
     },
     "JAVASCRIPT": {
       "DIST_DIR": "./public/js",
@@ -178,6 +164,7 @@ function smoosher(){
                         { "src": "./public/js/showdown.js", "jshint": false},
                         //对于highlight库，没有unpack的js文件
                         { "src": "./public/js/highlight.min.js", "jshint": false},
+                        { "src": "./public/js/socket.io.js", "jshint": false},
                         { "src": "./public/js/filemanager.js", "jshint": false},
                         { "src": "./public/js/keymaster.js", "jshint": false}],
       "dillinger": [ "./public/js/dillinger.js" ]

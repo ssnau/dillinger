@@ -2,6 +2,7 @@ $(function(){
   
   var editor
     , converter
+    , socket
     , autoInterval
     , githubUser
     , paperImgPath = '/img/notebook_paper_200x200.gif'
@@ -283,16 +284,38 @@ $(function(){
       //自动保存
       autoSave()
 
+      //init socket
+      initSocket()
+
       fileManager.set("dataset", [
-        tmpfiledataset
+        g_file_tree
       ]);
       fileManager.render();
       fileManager.on("fileNameChange", function(file, newtitle, oldtitle) {
-        console.log(newtitle, oldtitle);
-      })
+        console.log(newtitle, oldtitle)
+      });
+      fileManager.on("fileSelect", function(data) {
+        var file_id = data['id'];
+        socket.emit('request.file.data', file_id);     
+        socket.on('open.file.data', function(data) {
+          editor.setValue(data)
+        });     
+      });
       
     }
 
+  }
+
+  function initSocket() {
+    socket = io.connect();
+
+    $('show').bind('click', function() {
+     socket.emit('message', 'Message Sent on ' + new Date());     
+    });
+
+    socket.on('server_message', function(data){
+     $('#receiver').append('<li>' + data + '</li>');  
+    });
   }
 
   /**
