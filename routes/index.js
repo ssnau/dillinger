@@ -7,7 +7,8 @@ var path = require('path')
 // Show the home page
 exports.index = function(req, res){
     var file_tree = fm.folder_to_json(app.get("config")['file_root'], {
-      'file_filter': /.*/ /* /\.md$|txt$/ */
+      'file_filter': /\.md$|txt$/, //only md/txt allows
+      'folder_ignore': /^_/ /* ignore those folder start with _*/
     });
     res.render('index', {
       'file_tree': JSON.stringify(file_tree)

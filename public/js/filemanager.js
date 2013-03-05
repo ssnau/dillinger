@@ -18,7 +18,7 @@ var FileManager = (function() {
 	].join("\n");
 
 	var folder_tmpl = [
-		"<li>", 
+		"<li class='item'>", 
 			"<input type='checkbox' id='${id}' />",
 			"<label class='${lbclass}' for='${id}'>${name}</label>",
 			"<ul>",
@@ -145,9 +145,22 @@ var FileManager = (function() {
 		var _fm = fm, //cache fm for closure
 			$fn = $(fm.fn),
 			$fln = $(fm.fln),
-			$marquee = $(fm.marquee);
+			$marquee = $(fm.marquee),
+			em = fm.eventManager;
 
-		$fn.find(".folder-tree").on('click', 'li', function(e){
+		// when click on ".folder-tree li" element, trigger folderSelect event
+		$fn.find(".folder-tree").on('click', 'li', em.exec('folderSelect'));
+		// trigger fileSelect event
+		$fln.on('click', 'li.item', em.exec('fileSelect'));
+
+		em.addHandler('folderSelect', folderClick);
+		em.addHandler('fileSelect', fileClick);
+
+		em.addHandler('folderSelect', function(e) {
+			e.stopPropagation();
+		});
+		
+		function folderClick (e) {
 			var ndLi = $(this),
 				liOffset = ndLi.offset(),
 				liTop = liOffset.top,
@@ -155,9 +168,8 @@ var FileManager = (function() {
 				fnTop = $fn.offset().top,
 				fnScrollTop = $fn.scrollTop();
 
-			e.stopPropagation();
 			/* effect */
-			$marquee.css('width', $fn.css('width')) //$fn.width() will only only the content with, do not include padding & border
+			$marquee.css('width', $fn.css('width')) //$fn.width() will only the content with, do not include padding & border
 					.css('height', "26px")
 					.css('top', (liTop - fnTop + fnScrollTop - 2) + "px")
 					.css('left', '0px');
@@ -168,12 +180,12 @@ var FileManager = (function() {
 			/* show files*/
 			var id = $(this).find("input").first().attr("id");
 			showfiles(id);
-		});
+		}
 
-		$fln.on('click', 'li.item', function(e) {
+		function fileClick(e) {
 			$fln.find('li.item').removeClass('current');
 			$(this).addClass('current');
-		})
+		}
 
 		function showfiles(id) {
 			// must put ds & pds here, because it may be null for bindActions when user haven't set dataset
@@ -229,8 +241,18 @@ var FileManager = (function() {
 		 * fn (data, extraParams), data represent for the pds data, and extraParams contain specific info
 		 */
 		on: function(eventName, fn) { 
-			var me = this;
+			var me = this,
+				em = me.eventManager;
+
 			switch(eventName) {
+				case "folderSelect":
+					me.eventManager.addHandler(eventName, function(e){
+						var fid = $(this).attr('id'),
+							data = me.pds[fid];
+
+						fn(data);
+					})
+					break;
 				case "fileNameChange": 
 					$(me.fln).on('blur', '.title', function(e) {
 						var ndTitle = $(this),
@@ -247,7 +269,7 @@ var FileManager = (function() {
 					break;
 				case "fileSelect":
 				case "fileClick":
-					$(me.fln).on('click', 'li.item', function(e){
+					em.addHandler('fileSelect', function(e){
 						var id = $(this).attr('id');
 						fn(me.pds[id]);
 					});
@@ -262,7 +284,32 @@ var FileManager = (function() {
 		}
 	}
 
-	var fm = function (folderNode, filelistNode/*optional*/) {
+	function EventManager() {
+
+		this.handler = {};
+		/**
+		 * return a function that call the functions in this.handler[eventName] sequentially
+		 * @param  {[type]} eventName [description]
+		 * @param  {[type]} e         [description]
+		 * @return {[type]}           [description]
+		 */
+		this.exec = function EM_exec(eventName, e) {
+			var me = this; //eventManger itself
+			return function(e) {
+				var node = this; // cache the node(this) passed from jquery
+				$.each(me['handler'][eventName], function(index, f) {
+					f.apply(node, [e]);
+				})
+			}
+		}
+
+		this.addHandler = function EM_addHandler(eventName, fn) {
+			if (!this['handler'][eventName]) this['handler'][eventName] = [];
+			this['handler'][eventName].push(fn);
+		}
+	}
+
+	var fm = function FileManager(folderNode, filelistNode/*optional*/) {
 		var fields = {
 			'fn': null, //folder node
 			'fln': null, // file list node
@@ -274,6 +321,7 @@ var FileManager = (function() {
 		this.fln = filelistNode;
 		$(this.fn).html(folderMarkup);
 		this.marquee = $(this.fn).find('.marquee');
+		this.eventManager = new EventManager();
 		bindActions(this);
 	}
 

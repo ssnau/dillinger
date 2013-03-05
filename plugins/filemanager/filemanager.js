@@ -14,7 +14,8 @@ function traverseFolder(root, config) {
 
     // TODO: use a mixin function
     config = config || {
-        'file_filter': /.*/ //if RegExp matche, we keep this file tracked. Otherwise, leave it out.
+        'file_filter': /.*/, //if RegExp matche, we keep this file tracked. Otherwise, leave it out.
+        'folder_ignore': /^_/ //ignore those folder start with _
     }
     if (!exists(root)) {
         console.log("root["+ root +"] is not found!");
@@ -40,6 +41,9 @@ function traverseFolder(root, config) {
     	}
 
         if (isDir(path)) {
+            if (config.folder_ignore&& config.folder_ignore.test(baseName)) {
+                return null;
+            }
         	data.type = T_FOLDER;
         	data.children = [];
             var subPaths = fs.readdirSync(path);

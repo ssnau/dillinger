@@ -101,6 +101,13 @@ io.sockets.on('connection', function(socket){
       var str = fs.readFileSync(p, 'utf8');
       socket.emit('open.file.data', str);
   });
+  socket.on('request.save.file', function(data){
+      var id = data['file_id'],
+          content = data['content'];
+      var p = path.join(app.get('config')['file_root'], id.substr(fm.id_prefix.length));
+      var res = fs.writeFileSync(p, content, 'utf8');
+      socket.emit('save.file.msg', "successfully saved.");
+  });
   socket.on('disconnect', function(){
     console.log('Client Disconnected.');
   });
