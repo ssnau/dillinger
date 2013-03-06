@@ -298,8 +298,8 @@ $(function(){
       ]);
       fileManager.render();
 
-      fileManager.on("fileNameChange", function(file, newtitle, oldtitle) {
-        console.log(newtitle, oldtitle)
+      fileManager.on("fileNameChange", function(file, param) {
+        socket.emit('request.file.rename', {'file':file, 'nt':param['nt']})
       });
 
       fileManager.on("folderSelect", function() {
@@ -338,6 +338,7 @@ $(function(){
      $('#receiver').append('<li>' + data + '</li>');  
     });
 
+    /* file save */
     socket.on('open.file.data', function(data) {
       editor.getSession().setValue(data)
       previewMd()
@@ -346,6 +347,26 @@ $(function(){
     socket.on('save.file.msg', function(data) {
       Notifier.showMessage(data)
     })
+    /* file end */
+    /* file rename */
+    /**
+     * data should contain 
+     * $success -> wether success
+     * $prev_id -> which file we should rename
+     * $data -> a complete file info containing title, id, ctime....; if fails, it should be null.
+     */
+    socket.on('file.rename.msg', function(data) {
+      if (data['success']) {
+        Notifier.showMessage('file rename successfully')
+        if (selectingfile && selectingfile.id == data.prev_id) {
+          selectingfile = data['data'];
+        }
+      } else {
+        Notifier.showMessage('file rename failed')
+      }
+      fileManager.changeFileName(data['prev_id'], data['data'])
+    })
+    /* file rename end*/
   }
 
   /**
@@ -451,17 +472,19 @@ $(function(){
     
     var content = editor.getSession().getValue();
     updateUserProfile({currentMd: content})
-    isManual && Notifier.showMessage(Notifier.messages.docSavedLocal)
+    //isManual && Notifier.showMessage(Notifier.messages.docSavedLocal)
 
     if (!toServer || !selectingfile) return;
 
     // save back to server
-    socket.emit('request.save.file', 
-              {
-                'file_id': selectingfile.id,
-                'content': content
-              }
-    );
+    if (fileManager.pds[selectingfile.id]) {
+      socket.emit('request.save.file', 
+                {
+                  'file_id': selectingfile.id,
+                  'content': content
+                }
+      );
+    }
   }
   
   /**

@@ -1,6 +1,7 @@
 var fs = require('fs'),
     Path = require("path"),
-    id_prefix = 'fm-';
+    id_prefix = 'fm-',
+    util = require('util');
 
 /**
  * need an absolute path
@@ -12,15 +13,17 @@ function traverseFolder(root, config) {
     var T_FOLDER = 1,
         T_FILE = 2;
 
-    // TODO: use a mixin function
-    config = config || {
+    config = mixin({
         'file_filter': /.*/, //if RegExp matche, we keep this file tracked. Otherwise, leave it out.
-        'folder_ignore': /^_/ //ignore those folder start with _
-    }
+        'folder_ignore': /^_/, //ignore those folder start with _
+        'relative_root': root
+    }, config, true);
     if (!exists(root)) {
         console.log("root["+ root +"] is not found!");
         return false;
     }
+
+    var rel_root = config.relative_root;
 
     //start traversing
     return traverse(root);
@@ -36,8 +39,9 @@ function traverseFolder(root, config) {
         var baseName = Path.basename(path);
 
     	data = {
-    		'id': id_prefix + Path.relative(root, path),
-    		'name': baseName
+    		'id': id_prefix + Path.relative(rel_root, path),
+    		'name': Path.basename(path, '.md'),//for md file, we should hide its ext
+            'ctime' : ctime(path)
     	}
 
         if (isDir(path)) {
@@ -74,10 +78,14 @@ function traverseFolder(root, config) {
         return fs.lstatSync(path).isFile();
     }
 
+    function ctime(path) {
+        var date = fs.lstatSync(path)['ctime'];
+        return util.format("%s-%s-%s", date.getFullYear(), date.getMonth() + 1, date.getDate());
+    }
+
     function exists(path) {
         return fs.existsSync(path)
     }
-
 }
 
 function guid() {
@@ -86,5 +94,46 @@ function guid() {
 	     s4() + '-' + s4() + s4() + s4();
 }
 
-exports.folder_to_json = traverseFolder;
+/**
+ * Usage: util.eachProp(obj, function(propVal, propName){....});
+ * @param obj
+ * @param fn
+ */
+function eachProp(obj, fn) {
+    var prop;
+    for (prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+            if (fn(obj[prop], prop)) {
+                break;
+            }
+        }
+    }
+}
+/**
+ * Simple function to mix in properties from source into target,
+ * but only if target does not already have a property of the same name.
+ * force表示是否强制覆盖，如果设置为true,则无论target是否已经有这个属性都会被source覆盖
+ * deepStringMixin表示是否是深度拷贝，如果为true，则进行递归深拷贝
+ */
+function mixin(target, source, force, deepStringMixin) {
+    if (source) {
+        eachProp(source, function (value, prop) {
+            //如果target没有prop这个属性或force设置设true
+            if (force || !hasProp(target, prop)) {
+                //判断是否是深拷贝
+                if (deepStringMixin && typeof value !== 'string') {
+                    if (!target[prop]) {
+                        target[prop] = {};
+                    }
+                    mixin(target[prop], value, force, deepStringMixin);
+                } else {
+                    target[prop] = value;
+                }
+            }
+        });
+    }
+    return target;
+}
+
+exports.path_to_json = traverseFolder;
 exports.id_prefix = id_prefix;

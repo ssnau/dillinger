@@ -38,8 +38,8 @@ var FileManager = (function() {
 		"<div class='title' contenteditable='true'>${title}</div>",
 		"<div class='property'>",
 			"<span class='ctime'>${ctime}</span>",
-			"<span class='tag'>${tags}</span>",
-			"<span class='preview'>${preview}</span>",
+			/*"<span class='tag'>${tags}</span>",*/
+			/*"<span class='preview'>${preview}</span>",*/
 		"</div>",
 	"</li>",
 	].join("\n");
@@ -64,18 +64,25 @@ var FileManager = (function() {
 	}
 	/**
 	 * Make each folder/file storage in a key/value way.
+	 * store a reference for their parent
 	 */
 	function initData(dataset) {
 		var pData = {};
-		traverse(dataset);
+		traverse(dataset, null);
 		return pData;
 
-		function traverse(data) {
+		function traverse(data, parent) {
 			$.each(data, function(index, item){
 				if (!item.id) item.id = guid();
 				pData[item.id] = item;
+				// set enumerable to be false to avoid circular structure when calling JSON.stringify
+				Object.defineProperty(pData[item.id],
+                'parent', { value:  parent,
+                          writable:     true,
+                          configurable: true,
+                          enumerable:   false})
 				if (item.children) {
-					traverse(item.children)
+					traverse(item.children, item)
 				}
 			})
 		}
@@ -138,6 +145,33 @@ var FileManager = (function() {
 	}
 
 	/**
+	 * bind certain event with certain name
+	 * @param  {[type]} fm [description]
+	 * @return {[type]}    [description]
+	 */
+	function initEventHandle(fm) {
+		var em = fm.eventManager,
+			$fn = $(fm.fn),
+			$fln = $(fm.fln);
+
+		// when click on ".folder-tree li" element, trigger folderSelect event
+		$fn.find(".folder-tree").on('click', 'li', em.exec('folderSelect'));
+		$fn.find(".folder-tree").on('contextmenu', 'li', em.exec('folderRMC'));
+		// trigger fileSelect event
+		$fln.on('click', 'li.item', em.exec('fileSelect'));
+
+		//when select a folder, it should not bubble up
+		em.addHandler('folderSelect', stopPropagation);
+		em.addHandler('folderRMC', stopPropagation);
+		em.addHandler('folderRMC', preventDefault);
+		function stopPropagation(e){
+			e.stopPropagation();
+		}
+		function preventDefault(e){
+			e.preventDefault();
+		}
+	}
+	/**
 	 * bind actions when click on folders/files
 	 * @return {[type]}
 	 */
@@ -148,17 +182,13 @@ var FileManager = (function() {
 			$marquee = $(fm.marquee),
 			em = fm.eventManager;
 
-		// when click on ".folder-tree li" element, trigger folderSelect event
-		$fn.find(".folder-tree").on('click', 'li', em.exec('folderSelect'));
-		// trigger fileSelect event
-		$fln.on('click', 'li.item', em.exec('fileSelect'));
 
 		em.addHandler('folderSelect', folderClick);
 		em.addHandler('fileSelect', fileClick);
 
-		em.addHandler('folderSelect', function(e) {
-			e.stopPropagation();
-		});
+		em.addHandler('folderRMC', function(e){
+			console.log('heyyy');
+		})
 		
 		function folderClick (e) {
 			var ndLi = $(this),
@@ -236,6 +266,30 @@ var FileManager = (function() {
 			result = getFromTemplate(root_folder_tmpl, {'content': result})
 			$(this.fn).find('.folder-tree').html(result);//clear first, and then assign the result
 		},
+		changeFileName: function(id, newfile) {
+			var file = this.pds[id],
+				node = $(document.getElementById(id));//use native method to avoid crashing when complicated id that containing special character
+				newid= newfile['id'],
+				pfolder = file.parent;
+
+			// if new file is not null
+			if (newfile) {
+				$.each(pfolder.children, function(inx, v){
+					if (v.id == id) {
+						pfolder.children[inx] = newfile;
+						return false;
+					}
+				})
+				this.pds = initData(this.ds); //re-init pds to make it sync with this.data
+				//set properties for that dom node
+				node.attr('id', newid);
+				node.find('.title').html(newfile['name']);
+			} else {
+				// set the title back to the origin
+				node.find('.title').html(file['name']);
+			}
+
+		},
 		/**
 		 * custom event for user to bind, fn should accept two parameters.
 		 * fn (data, extraParams), data represent for the pds data, and extraParams contain specific info
@@ -262,7 +316,7 @@ var FileManager = (function() {
 							oldTitle = $.trim(me.pds[id]['name']);
 
 						if (newTitle != oldTitle) {
-							fn(me.pds[id], newTitle, oldTitle);
+							fn(me.pds[id], {'nt': newTitle, 'ot': oldTitle});
 						}
 						e.stopPropagation();
 					});
@@ -322,6 +376,7 @@ var FileManager = (function() {
 		$(this.fn).html(folderMarkup);
 		this.marquee = $(this.fn).find('.marquee');
 		this.eventManager = new EventManager();
+		initEventHandle(this);
 		bindActions(this);
 	}
 

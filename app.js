@@ -93,21 +93,54 @@ server.listen(app.get('port'), function(){
  * Soket.io for real time connection
  */
 var io = io.listen(server);
+var froot = app.get('config')['file_root'];
 io.set('log level', 1);
 io.sockets.on('connection', function(socket){
   console.log('Client Connected');
   socket.on('request.file.data', function(id){
-      var p = path.join(app.get('config')['file_root'], id.substr(fm.id_prefix.length));
+      var p = path.join(froot, id.substr(fm.id_prefix.length));
       var str = fs.readFileSync(p, 'utf8');
       socket.emit('open.file.data', str);
   });
   socket.on('request.save.file', function(data){
       var id = data['file_id'],
           content = data['content'];
-      var p = path.join(app.get('config')['file_root'], id.substr(fm.id_prefix.length));
+      var p = path.join(froot, id.substr(fm.id_prefix.length));
       var res = fs.writeFileSync(p, content, 'utf8');
       socket.emit('save.file.msg', "successfully saved.");
   });
+  socket.on('request.file.rename', function(data){
+    var file = data['file'],
+        new_title = data['nt'];
+
+    var p = path.join(froot, file.id.substr(fm.id_prefix.length));
+    var np = path.join(path.dirname(p), new_title + '.md');
+    fs.exists(p,function(exists){
+        if (!exists) emit(false, false);
+        fs.rename(p, np, function (err) {
+            if (err) {
+                if (err) console.stack(err);
+                emit(false, false);
+            }
+            //check the new path
+            fs.stat(np, function (err, stats) {
+                if (err) console.stack(err);
+                console.log('stats: ' + JSON.stringify(stats));
+                emit(true, fm.path_to_json(np, {'relative_root': froot}));
+            });
+        });
+        //helper function for sending msg back
+        function emit(success, data) {
+            socket.emit('file.rename.msg', {
+                'success': success ? true : false,
+                'prev_id': file['id'], //the prev file id
+                'data': data //new file data
+            });
+        }
+    });
+
+});
+
   socket.on('disconnect', function(){
     console.log('Client Disconnected.');
   });
