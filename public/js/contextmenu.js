@@ -16,7 +16,7 @@ contextmenu = (function(){
         managers = {},
         items = [];
 
-    $(document).on('.contextmenu li.item', 'click', function(e) {
+    $('.contextmenu').on('li.item', 'click', function(e) {
         //e.preventDefault();
         var t = this,
             cmd = t.getAttribute('cmd'),

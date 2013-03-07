@@ -938,6 +938,28 @@ $(function(){
      e.preventDefault() // so we don't save the webpage - native browser functionality
     })
 
+    var status = 0;
+    key('esc', function(e){
+        switch (status) {
+            case 0:
+                hideFileList();
+                showEditor();
+                break;
+            case 1:
+                hideFileList();
+                hideEditor();
+                break;
+            case 2:
+                showFileList();
+                hideEditor();
+                break;
+            case 3:
+                showFileList();
+                showEditor();
+                break;
+        }
+        status = (status + 1)%4
+    })
   }
 
   /**
