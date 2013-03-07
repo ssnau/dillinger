@@ -53,3 +53,41 @@ $contentWidth = 500
   top 0px
 
 
+/****context menu***/
+@css {
+    div.contextmenu {
+      background: white;
+      font-family:SourceCodeProRegular, Menlo, Monaco, consolas, monospace;
+      padding:5px 0px 5px 0px;
+      border: 1px solid #B8CBCB;
+      padding: 1px;
+      overflow: hidden;
+      box-shadow: #666 2px 2px 5px;
+      -moz-box-shadow: #666 2px 2px 5px;
+      -webkit-box-shadow: #666 2px 2px 5px;
+    }
+    div.contextmenu ul {
+       display:block;
+       list-style:none;
+       line-height:28px;
+       padding:0px;
+       margin:5px 0px 5px 0px;
+    }
+    div.contextmenu li.item {
+      list-style:none;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      vertical-align: middle;
+    }
+    div.contextmenu li.item span {
+      margin: 0 20px;
+      display: block;
+    }
+    div.contextmenu li.item:hover{
+      color: white;
+      background: #348CCC;
+      text-decoration: none;
+      cursor:pointer;
+    }
+}

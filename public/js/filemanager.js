@@ -189,7 +189,15 @@ var FileManager = (function() {
 		em.addHandler('folderRMC', function(e){
 			console.log('heyyy');
 		})
-		
+		contextmenu.register(fm.fln, {
+            'name': 'fileCM',
+            'getItems': function() {
+                // there should be some filter under certain condition.
+                return [
+                    {'cmd': 'createNewFile', 'text': 'Create New File'}
+                ]
+            }
+        })
 		function folderClick (e) {
 			var ndLi = $(this),
 				liOffset = ndLi.offset(),
