@@ -6,11 +6,14 @@ var path = require('path')
 
 // Show the home page
 exports.index = function(req, res){
+    if (req.cookies.name != 'admin') {
+        res.send('you are not authorized!')
+        return;
+    }
     var file_tree = fm.path_to_json(app.get("config")['file_root'], {
       'file_filter': /\.md$|txt$/, //only md/txt allows
       'folder_ignore': /^_/ /* ignore those folder start with _*/
     });
-    app.set('file_tree', file_tree);
     res.render('index', {
       'file_tree': JSON.stringify(file_tree)
     });

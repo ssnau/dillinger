@@ -995,7 +995,7 @@ var _DoCodeSpans = function(text) {
 		/gm, function(){...});
 	*/
 
-	text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
+	var res = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
 		function(wholeMatch,m1,m2,m3,m4) {
 			var c = m3;
 
@@ -1017,7 +1017,11 @@ var _DoCodeSpans = function(text) {
             }
 		});
 
-	return text;
+    // means it didn't replace anything above
+    if (res == text) {
+        if(/```\w*$/.test(text)) res = '';
+    }
+	return res;
 }
 
 

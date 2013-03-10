@@ -5385,7 +5385,6 @@ border-radius: 3px; }
 
   pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .lisp .string,pre .javadoc {
     color: #969896;
-    font-style: italic;
   }
 
   pre .keyword,pre .clojure .attribute,pre .winutils,pre .javascript .title,pre .addition,pre .css .tag {
