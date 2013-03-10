@@ -998,10 +998,23 @@ var _DoCodeSpans = function(text) {
 	text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
 		function(wholeMatch,m1,m2,m3,m4) {
 			var c = m3;
-			c = c.replace(/^([ \t]*)/g,"");	// leading whitespace
-			c = c.replace(/[ \t]*$/g,"");	// trailing whitespace
-			c = _EncodeCode(c);
-			return m1+"<code>"+c+"</code>";
+
+            // ssnau modifies
+            if (m2 == "```") { // then, it must be a huge block in github style
+                var language = '';
+                c = c.replace(/^\w*\W/, function(wm) {
+                    language = wm;
+                    return '';
+                });
+                language = language.replace(/\W/gm, '');//actually we only expect there are consecutive chars
+                c = _EncodeCode(c);
+                return m1+"<pre><code class='" + language +"'>"+c+"</code></pre>"
+            } else {
+                c = c.replace(/^([ \t]*)/g,"");	// leading whitespace
+                c = c.replace(/[ \t]*$/g,"");	// trailing whitespace
+                c = _EncodeCode(c);
+			    return m1+"<code>"+c+"</code>";
+            }
 		});
 
 	return text;

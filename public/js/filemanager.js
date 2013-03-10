@@ -1,6 +1,15 @@
 var FileManager = (function() {
 	var TYPE_FOLDER = 1,
-		TYPE_FILE = 2;
+		TYPE_FILE = 2,
+        untitled = 1;
+
+    var busyOverlay = $([
+        "<div style='",
+            "position:fixed;index:999;background:rgba(200,200,200,.4);display:-moz-box;-moz-box-pack:center;-moz-box-align:center;display:-webkit-box;-webkit-box-pack:center;-webkit-box-align:center;display:box;box-pack:center;box-align:center;",
+            "'>",
+            "<img src='http://loadinggif.com/images/image-selection/13.gif'/>",
+        "</div>"
+    ].join("\n"));
 
 	var folderMarkup = [
 		"<div class='folder-tree' style='position:absolute;width:100%;z-index:5'>",
@@ -30,18 +39,18 @@ var FileManager = (function() {
 	var root_file_tmpl = [
 			"<ul class='css-file-view'>",
 				"${content}",
-			"</ul>",
+			"</ul>"
 	].join("\n");
 
 	var file_tmpl = [
 	"<li class='item' id='${id}'>",
-		"<div class='title' contenteditable='true'>${title}</div>",
+		"<div class='title' contenteditable='true'>${name}</div>",
 		"<div class='property'>",
 			"<span class='ctime'>${ctime}</span>",
 			/*"<span class='tag'>${tags}</span>",*/
 			/*"<span class='preview'>${preview}</span>",*/
 		"</div>",
-	"</li>",
+	"</li>"
 	].join("\n");
 
 	/**
@@ -49,6 +58,7 @@ var FileManager = (function() {
 	 */
 	function getFromTemplate(tpl, options) {
 		var str = tpl;
+        options = options || {};
 		$.each(options, function(key, value) {
 			str = str.replace(new RegExp("\\$\\{" + key + "\\}", 'g'), value);
 		});
@@ -66,7 +76,7 @@ var FileManager = (function() {
 	 * Make each folder/file storage in a key/value way.
 	 * store a reference for their parent
 	 */
-	function initData(dataset) {
+	function initData(dataset) { //TODO: make it to be a method of filemanager
 		var pData = {};
 		traverse(dataset, null);
 		return pData;
@@ -75,7 +85,9 @@ var FileManager = (function() {
 			$.each(data, function(index, item){
 				if (!item.id) item.id = guid();
 				pData[item.id] = item;
+                pData[item.id]["ppath"] = parent && parent.path; //only save parent's path for avoiding circular parsing
 				// set enumerable to be false to avoid circular structure when calling JSON.stringify
+                // it is more useful on client side.
 				Object.defineProperty(pData[item.id],
                 'parent', { value:  parent,
                           writable:     true,
@@ -160,6 +172,7 @@ var FileManager = (function() {
 		// trigger fileSelect event
 		$fln.on('click', 'li.item', em.exec('fileSelect'));
 
+
 		//when select a folder, it should not bubble up
 		em.addHandler('folderSelect', stopPropagation);
 		em.addHandler('folderRMC', stopPropagation);
@@ -176,33 +189,69 @@ var FileManager = (function() {
 	 * @return {[type]}
 	 */
 	function bindActions(fm) {
-		var _fm = fm, //cache fm for closure
-			$fn = $(fm.fn),
+		var $fn = $(fm.fn),
 			$fln = $(fm.fln),
 			$marquee = $(fm.marquee),
 			em = fm.eventManager;
 
 
 		em.addHandler('folderSelect', folderClick);
+        em.addHandler('folderSelect', function(){
+            fm.searchmode = false;
+        });
 		em.addHandler('fileSelect', fileClick);
+        $fln.on('keyup', '.title', function(e){
+            if (e.keyCode == 13) {//ENTER
+                this.blur();
+            }
+        })
 
-		em.addHandler('folderRMC', function(e){
-			console.log('heyyy');
-		})
 		contextmenu.register(fm.fln, {
-            'name': 'fileCM',
+            'name': 'fileCMM',
             'getItems': function() {
                 // there should be some filter under certain condition.
                 return [
                     {'cmd': 'createNewFile', 'text': 'Create New File'}
                 ]
+            },
+            'confirm': function() {
+                // when there are folder is selected or in search mode
+                if (!fm.cfolder || fm.searchmode) {
+                    return false;
+                }
+                return true;
+            },
+            'exec': {
+                'createNewFile': function() {
+                    busy(fm, 'file');
+                    setTimeout(function(){
+                    $.ajax({
+                        url: "/files/create",
+                        data: {
+                            'path': fm.cfolder.path
+                        },
+                        async: false   //we need to sync request it!
+                    }).done(function ( data ) {
+                        var item = JSON.parse(data);
+                        if (item && item.id) { //means that we create it successfully
+                            var nd = $(getFromTemplate(file_tmpl, item));
+                            fm.cfolder.children.push(item);
+                            fm.pds = initData(fm.ds);
+                            nd.prependTo($fln.find('.css-file-view'));
+                            nd.find('.title').focus();
+                            $fln.scrollTop(0); // scroll to top
+                            em.exec('createFile')(item);
+                        }
+                        unbusy(fm);
+                    });
+                    }, 10);
+                }
             }
         })
-		function folderClick (e) {
+		function folderClick () {
 			var ndLi = $(this),
 				liOffset = ndLi.offset(),
 				liTop = liOffset.top,
-				liLeft = liOffset.left,
 				fnTop = $fn.offset().top,
 				fnScrollTop = $fn.scrollTop();
 
@@ -217,18 +266,21 @@ var FileManager = (function() {
 
 			/* show files*/
 			var id = $(this).find("input").first().attr("id");
+            fm.cfolder = fm.pds[id];
 			showfiles(id);
 		}
 
-		function fileClick(e) {
+		function fileClick() {
 			$fln.find('li.item').removeClass('current');
 			$(this).addClass('current');
+            var id = $(this).attr('id')
+            fm.cfile = fm.pds[id]
 		}
 
 		function showfiles(id) {
 			// must put ds & pds here, because it may be null for bindActions when user haven't set dataset
-			var ds = _fm.ds,
-				pds = _fm.pds;
+			var pds = fm.pds;
+            busy(fm, 'file');
 			$fln.html(); //clear previous list
 			if (!pds[id] || !pds[id]['children']) return;
 			var html = '';
@@ -236,7 +288,7 @@ var FileManager = (function() {
 				if (item.type == TYPE_FILE) {
 					html += getFromTemplate(file_tmpl, {
 						"id" : item['id'],
-						"title": item['name'],
+						"name": item['name'],
 						"ctime": item['ctime'],
 						"tags": item['tags'],
 						"preview": /*item['preview']*/"Gits：可以轻松集成 GitHub SFTP：直接编辑 FTP 或 SFTP 服务器上的文件 ZenCoding：这货对于前端的同学来说不得了，可以超快速编写HTML文件 (视频演示) ConvertToUTF8：ST2只支持utf8编码，该插件可以显示与编辑 GBK, BIG5, EUC-KR, EUC-JP, Shift_JIS 等编码的文件"
@@ -246,8 +298,38 @@ var FileManager = (function() {
 			// wrap with root_file_tmpl
 			html = getFromTemplate(root_file_tmpl, {'content':html});
 			$fln.html(html);
+            unbusy(fm);
 		}
 	}
+
+    /**
+     * block the section that user cannot click on it and showing the loading icon.
+     * @param name
+     */
+    function busy(fm, name) {
+        var $fn = $(fm.fn),
+            $fln = $(fm.fln),
+            $nd = null;
+
+        if (name == "folder") {
+            $nd = $fn;
+        }
+        if (name == 'file') {
+            $nd = $fln;
+        }
+        busyOverlay.
+            css('width', $nd.width()).
+            css('height', $nd.height()).
+            css('top', $nd.offset().top + 'px').
+            css('left', $nd.offset().left + 'px');
+
+        busyOverlay.appendTo(document.body);
+        busyOverlay.show();
+    }
+
+    function unbusy(fm) {
+        busyOverlay.fadeOut(100);
+    }
 	// API method
 	var api = {
 		set: function(name, value) {
@@ -276,7 +358,7 @@ var FileManager = (function() {
 		},
 		changeFileName: function(id, newfile) {
 			var file = this.pds[id],
-				node = $(document.getElementById(id));//use native method to avoid crashing when complicated id that containing special character
+				node = $(document.getElementById(id)),//use native method to avoid crashing when complicated id that containing special character
 				newid= newfile['id'],
 				pfolder = file.parent;
 
@@ -298,6 +380,32 @@ var FileManager = (function() {
 			}
 
 		},
+        getFileList: function(){
+            var list = [];
+            $.each(this.pds, function(inx, val) {
+                if (val.type == TYPE_FILE) list.push(val);
+            })
+            return list;
+        },
+        addToSearchList: function(item) {
+            var $fln = $(this.fln);
+
+            var ul = $fln.find('ul.css-file-view'); //get the ul
+            if (!ul[0]) { // if it does not exists
+                ul = $(getFromTemplate(root_file_tmpl));
+                ul.appendTo($fln);
+            }
+            this.searchmode != item['searchtask_id'] && ul.html(''); //if it is not in searchmode before or not the same task, clear it first.
+            this.searchmode = item['searchtask_id'];
+            var html = getFromTemplate(file_tmpl, {
+                        "id" : item['id'],
+                        "name": item['name'],
+                        "ctime": item['ctime'],
+                        "tags": item['tags'],
+                        "preview": /*item['preview']*/"Gits：可以轻松集成 GitHub SFTP：直接编辑 FTP 或 SFTP 服务器上的文件 ZenCoding：这货对于前端的同学来说不得了，可以超快速编写HTML文件 (视频演示) ConvertToUTF8：ST2只支持utf8编码，该插件可以显示与编辑 GBK, BIG5, EUC-KR, EUC-JP, Shift_JIS 等编码的文件"
+            });
+            $(html).appendTo(ul);
+        },
 		/**
 		 * custom event for user to bind, fn should accept two parameters.
 		 * fn (data, extraParams), data represent for the pds data, and extraParams contain specific info
@@ -337,11 +445,21 @@ var FileManager = (function() {
 					});
 					break;
 				case "fileDBClick":
-					$(me.fln).on('click', 'li.item', function(e){
-						var id = $(this).attr('id');
+					$(me.fln).dblclick(function(e){
+                        var ele = e.target;
+                        while(ele.tagName.toLowerCase() != 'li' && !/item/.test(ele.className)) {
+                            if($(me.fln).is(ele)) return; // if the node is fln itself, then we do nothing
+                            ele = ele.parentNode;
+                        }
+                        var id = $(ele).attr('id');
 						fn(me.pds[id]);
 					});
 					break;
+                case "createFile":
+                   em.addHandler('createFile', function(item){
+                       fn(item);
+                   })
+                   break;
 			}
 		}
 	}
@@ -359,6 +477,7 @@ var FileManager = (function() {
 			var me = this; //eventManger itself
 			return function(e) {
 				var node = this; // cache the node(this) passed from jquery
+                if (!me['handler'][eventName]) return;
 				$.each(me['handler'][eventName], function(index, f) {
 					f.apply(node, [e]);
 				})
@@ -376,7 +495,10 @@ var FileManager = (function() {
 			'fn': null, //folder node
 			'fln': null, // file list node
 			'ds': null, //dataset
-			'pds': null //dataset in a key/value way
+			'pds': null, //dataset in a key/value way
+            'cfolder': null, //current folder
+            'cfile': null, //current file
+            'searchmode': null // String indicating the current search task
 		};
 		$.extend(this, fields);
 		this.fn = folderNode;

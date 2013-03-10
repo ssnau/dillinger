@@ -1,8 +1,45 @@
 var fs = require('fs'),
     Path = require("path"),
-    id_prefix = 'fm-',
     util = require('util');
+/**
+ *
+ * @param folder Object
+ * @param file Object
+ * @param nt String
+ * @returns {boolean}
+ */
+exports.renamefile = function renamefile(root, file, nt) {
+    console.log('call renamefile');
+    // if the path is empty, stop to rename, otherwise it will rename the root path!
+    if (!file.path.length) {
+        return false;
+    }
 
+    var p = Path.join(root, file.path);
+    var np = Path.join(Path.dirname(p), nt + '.md');
+    if (fs.existsSync(p)) {
+        fs.renameSync(p, np);
+        if (fs.existsSync(np)) {
+            return traverseFolder(np, {'relative_root': root}); //only here we success
+        } else {
+            return false;
+        }
+    }
+}
+
+exports.createfile = function createfile(root, path) {
+    var abs_folder = Path.join(root, path), file_path;
+    for (var i = 1; i < 10; i++) {
+        file_path = Path.join(abs_folder, 'Untitled ' + i + '.md');
+        if (!fs.existsSync(file_path)) break;
+    }
+    try {
+        fs.writeFileSync(file_path, "", "utf8");
+    } catch(e) {
+        console.log(e);
+    }
+    return traverseFolder(file_path,{'relative_root': root});
+}
 /**
  * need an absolute path
  * @param  {[type]} root [description]
@@ -39,8 +76,10 @@ function traverseFolder(root, config) {
         var baseName = Path.basename(path);
 
     	data = {
-    		'id': id_prefix + Path.relative(rel_root, path),
+            'id':'f' + s4() + (new Date() -0).toString().substring(8),
+    		//'id': (id_prefix + Path.relative(rel_root, path)).replace(/\s/g, '_'), //replace all the blanks into _ to avoid risk.
     		'name': Path.basename(path, '.md'),//for md file, we should hide its ext
+            'path': Path.relative(rel_root, path),
             'ctime' : ctime(path)
     	}
 
@@ -89,11 +128,10 @@ function traverseFolder(root, config) {
 }
 
 function guid() {
-	function s4() {return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1) }
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
 	     s4() + '-' + s4() + s4() + s4();
 }
-
+function s4() {return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1) }
 /**
  * Usage: util.eachProp(obj, function(propVal, propName){....});
  * @param obj
@@ -136,4 +174,3 @@ function mixin(target, source, force, deepStringMixin) {
 }
 
 exports.path_to_json = traverseFolder;
-exports.id_prefix = id_prefix;

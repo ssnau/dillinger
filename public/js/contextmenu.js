@@ -12,21 +12,22 @@ contextmenu = (function(){
             '<ul>${content}</ul>',
         '</div>'
     ].join('\n'),
-        et = ["<li class='item' cmd='${cmd}' m='${manager}'><span>${text}</span></li>"].join('\n'),
-        managers = {},
-        items = [];
+        et = ["<li class='item cmitem' cmd='${cmd}' m='${manager}'><span>${text}</span></li>"].join('\n'),
+        managers = {};
 
-    $('.contextmenu').on('li.item', 'click', function(e) {
-        //e.preventDefault();
-        var t = this,
-            cmd = t.getAttribute('cmd'),
-            m = t.getAttribute('m');
+    document.addEventListener('click', function(e) {
+       var t = e.target || e.source;
+       if (t.tagName.toLowerCase() == 'span') t = t.parentNode;
+       var cmd = t.getAttribute('cmd'),
+           m = t.getAttribute('m');
 
-        // ask the manager to do that
-        if (m && managers['m']) {
-            managers['m'].exec(cmd, t);
+        if (t.tagName.toLowerCase() === 'li' && /\scmitem$/.test(t.className)) {
+            // ask the manager to do that
+            if (m && managers[m]) {
+                managers[m].exec[cmd](e);
+            }
         }
-    })
+    });
 
     $(document).click(function(){
         clearCM();
@@ -80,15 +81,17 @@ contextmenu = (function(){
         register: function(pNode, cNode, cm) {
             if (Object.prototype.toString.call(cNode) !== '[object String]') {
                 cm = cNode;//this is not a delegate
-                $(pNode).contextmenu(function(e){
-                    e.preventDefault();
-                    build(e, cm);
-                })
+                $(pNode).contextmenu(popup)
             } else {
-                $(pNode).on(cNode, 'contextmenu', function(e){
-                    e.preventDefault();
-                    build(e, cm);
-                })
+                $(pNode).on(cNode, 'contextmenu',popup)
+            }
+            managers[cm.name] = cm;
+            function popup(e) {
+                e.preventDefault();
+                // if the manager has confirm method, we should ask for confirm first.
+                if (cm.confirm) {
+                    cm.confirm(e) && build(e, cm);
+                }
             }
         },
         /* a helper function used for clear existing contextmenu*/
@@ -96,3 +99,12 @@ contextmenu = (function(){
     }
 
 })();
+/**
+ * a context menu manger(short for cmm) should have such fields. '*' means it is required.
+ * {
+ * name, {String}* name
+ * getItems, {Array Function}* get menu items under current condition
+ * exec, {JSON}* containing we execute the action by calling cmm.exec[cmd](e); Using Json is to make it easier to mixin with other cmd Object when they perform the same action but in diffirent cmm
+ * confirm, {Bool Function} if it return false, we shouldn't display the menu; if it doesn't exist, we always show the menu without check
+ *}
+ */

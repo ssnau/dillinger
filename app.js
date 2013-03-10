@@ -17,6 +17,7 @@ console.log(app_config)
 /*declare app without var so that each module can access it*/
 app = express()
 app.set("config", app_config)
+var froot = app.get('config')['file_root'];
 
 app.configure(function(){
   app.set('port', process.env.PORT || 9420)
@@ -82,6 +83,11 @@ app.post('/factory/fetch_html', routes.fetch_html)
 // Route to handle download of html file
 app.get('/files/html/:html', routes.download_html)
 
+// File
+app.get('/files/create', function(req, res){
+    var file = fm.createfile(froot, req.param('path'));
+    res.send(JSON.stringify(file));
+})
 
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
@@ -93,56 +99,88 @@ server.listen(app.get('port'), function(){
  * Soket.io for real time connection
  */
 var io = io.listen(server);
-var froot = app.get('config')['file_root'];
 io.set('log level', 1);
 io.sockets.on('connection', function(socket){
   console.log('Client Connected');
-  socket.on('request.file.data', function(id){
-      var p = path.join(froot, id.substr(fm.id_prefix.length));
-      var str = fs.readFileSync(p, 'utf8');
-      socket.emit('open.file.data', str);
+  socket.on('request.open.file', function(file){
+      if (file && file.path);else return false;
+      var p = path.join(froot, file.path);
+      if (fs.existsSync(p)) {
+        var str = fs.readFileSync(p, 'utf8');
+        socket.emit('response.open.file', str);
+      }
   });
   socket.on('request.save.file', function(data){
-      var id = data['file_id'],
+      var p = data['path'],
           content = data['content'];
-      var p = path.join(froot, id.substr(fm.id_prefix.length));
-      var res = fs.writeFileSync(p, content, 'utf8');
-      socket.emit('save.file.msg', "successfully saved.");
+      var p = path.join(froot, p);
+      fs.writeFileSync(p, content, 'utf8');
+      socket.emit('response.save.file', "successfully saved.");
   });
   socket.on('request.file.rename', function(data){
-    var file = data['file'],
-        new_title = data['nt'];
+    var folder = data['folder'],
+        file = data['file'],
+        new_title = data['nt'],
+        result = fm.renamefile(froot, file, new_title);
 
-    var p = path.join(froot, file.id.substr(fm.id_prefix.length));
-    var np = path.join(path.dirname(p), new_title + '.md');
-    fs.exists(p,function(exists){
-        if (!exists) emit(false, false);
-        fs.rename(p, np, function (err) {
-            if (err) {
-                if (err) console.stack(err);
-                emit(false, false);
-            }
-            //check the new path
-            fs.stat(np, function (err, stats) {
-                if (err) console.stack(err);
-                console.log('stats: ' + JSON.stringify(stats));
-                emit(true, fm.path_to_json(np, {'relative_root': froot}));
-            });
-        });
-        //helper function for sending msg back
-        function emit(success, data) {
-            socket.emit('file.rename.msg', {
-                'success': success ? true : false,
-                'prev_id': file['id'], //the prev file id
-                'data': data //new file data
-            });
-        }
-    });
+    if (result) {
+        emit(true, result);
+    } else {
+        emit(false);
+    }
 
+    //helper function for sending msg back
+    function emit(success, data) {
+      socket.emit('file.rename.msg', {
+          'success': success ? true : false,
+          'prev_id': file['id'], //the prev file id
+          'data': data //new file data
+      });
+    }
 });
 
   socket.on('disconnect', function(){
     console.log('Client Disconnected.');
+  });
+
+    var search_task = null;
+    /**
+     * task should contain {
+     * id: String,
+     * pattern: String, indicating what we are looking for
+     * fps: Array, each one store file to search
+     */
+  socket.on('request.search', function(task){
+      var files = task.fps,
+          id = task.id,
+          pattern = task.pattern,
+          what = 3; //1 stands for content, 2 stands for file name, 3 stands for all
+      search_task = task;
+      if (!pattern.length) return;
+      if (pattern[0] === '#') {
+          what = 2;
+          pattern = pattern.substring(1);
+      }
+      files.forEach(function(file) {
+          var p = file.path;
+          file.searchtask_id = id;
+          if (search_task.id != id) return false;
+          if (what == 2 || what == 3) {
+              if (p.indexOf(pattern) != -1) {
+                  emit(file);
+                  return true;
+              }
+          }
+          fs.readFile(path.join(froot, p), 'utf8', function(err, data){
+            if (search_task.id != id) return false;
+            if (data.indexOf(pattern) != -1) {
+                emit(file);
+            }
+          })
+      })
+      function emit(res){
+          socket.emit('response.search', res)
+      }
   });
 });
 

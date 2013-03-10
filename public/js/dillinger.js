@@ -3,8 +3,6 @@ $(function(){
   var editor
     , converter
     , socket
-    , autoInterval
-    , githubUser
     , paperImgPath = '/img/notebook_paper_200x200.gif'
     , profile = 
       {
@@ -41,7 +39,8 @@ $(function(){
     , $doc = $(document)
 
   var selectingfile = null //file we currently viewing, may not be editing
-    ,  editingfile = null  //file we currently editing & viewing
+    , editingfile = null  //file we currently editing & viewing
+    , selectingfolder = null //folder we currently working on
   // Hash of themes and their respective background colors
   var bgColors = 
     {
@@ -271,7 +270,7 @@ $(function(){
       hideFileList()
       
       converter = new Showdown.converter()
-      
+
       //绑定事件，每一次keyup，都会触发preview的刷新
       bindPreview()
 
@@ -293,58 +292,58 @@ $(function(){
       //init socket
       initSocket()
 
-      fileManager.set("dataset", [
-        g_file_tree
-      ]);
-      fileManager.render();
+      initFileManager()
 
-      fileManager.on("fileNameChange", function(file, param) {
-        socket.emit('request.file.rename', {'file':file, 'nt':param['nt']})
-      });
-
-      fileManager.on("folderSelect", function() {
-        showFileList();
-      });
-
-      fileManager.on("fileSelect", function(data) {
-        var file_id = data['id'];
-        selectingfile = data;
-        socket.emit('request.file.data', file_id);     
-      });
-      fileManager.on("fileDBClick", function(data){
-        var file_id = data['id'];
-        selectingfile = data;
-        if (selectingfile && selectingfile['id'] == file_id) {
-          // if the file is already selecting before, show the Editor immediately
-          showEditor()
-        } else {
-          socket.emit('request.file.data', file_id);     
-        }
-        showEditor()// TODO: actually we need to show the editor after we receive the file content
-      });
-      
     }
 
   }
 
+    function initFileManager() {
+        fileManager.set("dataset", [
+            g_file_tree
+        ]);
+        fileManager.render();
+
+        fileManager.on("fileNameChange", function(file, param) {
+            socket.emit('request.file.rename', {'folder': selectingfolder, 'file':file, 'nt':param['nt']})
+        });
+
+        fileManager.on("folderSelect", function(data) {
+            selectingfolder = data;
+            showFileList();
+        });
+
+        fileManager.on("fileSelect", function(data) {
+            selectingfile = data;
+            socket.emit('request.open.file', data);
+        });
+        fileManager.on("fileDBClick", function(data){
+            var file_id = data['id'];
+            selectingfile = data;
+            if (selectingfile && selectingfile['id'] == file_id) {
+                // if the file is already selecting before, show the Editor immediately
+                showEditor()
+            } else {
+                socket.emit('request.open.file', data);
+            }
+            showEditor()// TODO: actually we need to show the editor after we receive the file content
+        });
+        fileManager.on("createFile", function(file) {
+            if (file) {
+                Notifier.showMessage("create file successfully");
+            }
+        })
+    }
   function initSocket() {
     socket = io.connect();
 
-    $('show').bind('click', function() {
-     socket.emit('message', 'Message Sent on ' + new Date());     
-    });
-
-    socket.on('server_message', function(data){
-     $('#receiver').append('<li>' + data + '</li>');  
-    });
-
     /* file save */
-    socket.on('open.file.data', function(data) {
+    socket.on('response.open.file', function(data) {
       editor.getSession().setValue(data)
       previewMd()
     });     
 
-    socket.on('save.file.msg', function(data) {
+    socket.on('response.save.file', function(data) {
       Notifier.showMessage(data)
     })
     /* file end */
@@ -367,6 +366,14 @@ $(function(){
       fileManager.changeFileName(data['prev_id'], data['data'])
     })
     /* file rename end*/
+
+    /* file search */
+    socket.on('response.search', function(file){
+        if(!file) return;
+        console.log(file);
+        fileManager.addToSearchList(file);
+        showFileList();
+    })
   }
 
   /**
@@ -480,7 +487,7 @@ $(function(){
     if (fileManager.pds[selectingfile.id]) {
       socket.emit('request.save.file', 
                 {
-                  'file_id': selectingfile.id,
+                  'path': selectingfile.path,
                   'content': content
                 }
       );
@@ -844,7 +851,18 @@ $(function(){
    * @return {Void}
    */  
   function bindNav(){
-    
+
+    $("#search").submit(function(e){
+        e.preventDefault();
+        var pattern = $(this).find('input[name=pattern]')[0].value;
+        pattern = $.trim(pattern);
+        if (!pattern.length) return false;
+        socket.emit('request.search', {
+            id: Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1),
+            pattern: pattern,
+            fps: fileManager.getFileList()
+        })
+    });
     $theme
       .find('li > a')
       .bind('click', function(e){

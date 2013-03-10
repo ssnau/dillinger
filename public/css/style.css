@@ -5139,6 +5139,298 @@ noscript p {
   background-color:rgba(0,0,0,.05)
 }
 /* app specific */
+#preview a {
+color: #4183C4; }
+#preview a.absent {
+color: #cc0000; }
+#preview a.anchor {
+display: block;
+padding-left: 30px;
+margin-left: -30px;
+cursor: pointer;
+position: absolute;
+top: 0;
+left: 0;
+bottom: 0; }
+
+#preview h1, #preview h2, #preview h3, #preview h4, #preview h5, #preview h6 {
+margin: 0px 0 10px;
+padding: 0;
+font-weight: bold;
+font-family: "Arvo","Georgia", "Helvetica Neue", Helvetica, Arial, sans-serif;
+-webkit-font-smoothing: antialiased;
+cursor: text;
+position: relative; }
+
+
+
+#preview h1 tt, #preview h1 code {
+font-size: inherit; }
+
+#preview h2 tt, #preview h2 code {
+font-size: inherit; }
+
+#preview h3 tt, #preview h3 code {
+font-size: inherit; }
+
+#preview h4 tt, #preview h4 code {
+font-size: inherit; }
+
+#preview h5 tt, #preview h5 code {
+font-size: inherit; }
+
+#preview h6 tt, #preview h6 code {
+font-size: inherit; }
+
+#preview h1 {
+font-size: 28px;
+color: black; }
+
+#preview h2 {
+font-size: 24px;
+border-bottom: 1px solid #cccccc;
+color: black; }
+
+#preview h3 {
+font-size: 18px; }
+
+#preview h4 {
+font-size: 16px; }
+
+#preview h5 {
+font-size: 14px; }
+
+#preview h6 {
+color: #777777;
+font-size: 14px; }
+
+#preview p, #preview blockquote, #preview ul, #preview ol, #preview dl, #preview li, #preview table, #preview pre {
+margin: 15px 0; }
+
+#preview hr {
+border: 0 none;
+color: #cccccc;
+height: 4px;
+padding: 0; }
+
+#preview a:first-child h1, #preview a:first-child h2, #preview a:first-child h3, #preview a:first-child h4, #preview a:first-child h5, #preview a:first-child h6 {
+margin-top: 0;
+padding-top: 0; }
+
+#preview h1 p, #preview h2 p, #preview h3 p, #preview h4 p, #preview h5 p, #preview h6 p {
+margin-top: 0; }
+
+#preview li p.first {
+display: inline-block; }
+
+#preview ul, #preview ol {
+padding-left: 30px; }
+
+#preview ul :first-child, #preview ol :first-child {
+margin-top: 0; }
+
+#preview ul :last-child, #preview ol :last-child {
+margin-bottom: 0; }
+
+#preview dl {
+padding: 0; }
+#preview   dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px; }
+#preview     dl dt:first-child {
+    padding: 0; }
+#preview     dl dt > :first-child {
+    margin-top: 0; }
+#preview     dl dt > :last-child {
+    margin-bottom: 0; }
+#preview   dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px; }
+#preview     dl dd > :first-child {
+    margin-top: 0; }
+#preview     dl dd > :last-child {
+    margin-bottom: 0; }
+
+#preview blockquote {
+border-left: 4px solid #dddddd;
+padding: 0 15px;
+color: #777777; }
+#preview   blockquote > :first-child {
+  margin-top: 0; }
+#preview   blockquote > :last-child {
+  margin-bottom: 0; }
+
+#preview table {
+padding: 0; }
+#preview   table tr {
+  border-top: 1px solid #cccccc;
+  background-color: white;
+  margin: 0;
+  padding: 0; }
+#preview     table tr:nth-child(2n) {
+    background-color: #f8f8f8; }
+#preview     table tr th {
+    font-weight: bold;
+    border: 1px solid #cccccc;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px; }
+#preview     table tr td {
+    border: 1px solid #cccccc;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px; }
+#preview     table tr th :first-child, #preview table tr td :first-child {
+    margin-top: 0; }
+#preview     table tr th :last-child, #preview table tr td :last-child {
+    margin-bottom: 0; }
+
+#preview img {
+max-width: 100%; }
+
+#preview span.frame {
+display: block;
+overflow: hidden; }
+#preview   span.frame > span {
+  border: 1px solid #dddddd;
+  display: block;
+  float: left;
+  overflow: hidden;
+  margin: 13px 0 0;
+  padding: 7px;
+  width: auto; }
+#preview   span.frame span img {
+  display: block;
+  float: left; }
+#preview   span.frame span span {
+  clear: both;
+  color: #333333;
+  display: block;
+  padding: 5px 0 0; }
+#preview span.align-center {
+display: block;
+overflow: hidden;
+clear: both; }
+#preview   span.align-center > span {
+  display: block;
+  overflow: hidden;
+  margin: 13px auto 0;
+  text-align: center; }
+#preview   span.align-center span img {
+  margin: 0 auto;
+  text-align: center; }
+#preview span.align-right {
+display: block;
+overflow: hidden;
+clear: both; }
+#preview   span.align-right > span {
+  display: block;
+  overflow: hidden;
+  margin: 13px 0 0;
+  text-align: right; }
+#preview   span.align-right span img {
+  margin: 0;
+  text-align: right; }
+#preview span.float-left {
+display: block;
+margin-right: 13px;
+overflow: hidden;
+float: left; }
+#preview   span.float-left span {
+  margin: 13px 0 0; }
+#preview span.float-right {
+display: block;
+margin-left: 13px;
+overflow: hidden;
+float: right; }
+#preview   span.float-right > span {
+  display: block;
+  overflow: hidden;
+  margin: 13px auto 0;
+  text-align: right; }
+
+#preview .highlight pre {
+background-color: #f8f8f8;
+border: 1px solid #cccccc;
+font-size: 13px;
+line-height: 19px;
+overflow: auto;
+padding: 6px 10px;
+border-radius: 3px; }
+/*
+
+  Style with support for rainbow parens
+
+  */
+
+  pre ::-moz-selection{ background: #FF5E99; color:#fff; text-shadow: none; }
+  pre ::selection { background:#FF5E99; color:#fff; text-shadow: none; }
+
+  pre {
+      padding: 2px;
+      background: #474949; color: #D1D9E1; /*make sure pre & code are in the same background color*/
+  }
+  pre code {
+    display: block; padding: 0.5em;
+    background: #474949; color: #D1D9E1;
+  }
+
+
+  pre .body,pre .collection {
+     color: #D1D9E1;
+  }
+
+  pre .comment,pre .template_comment,pre .diff .header,pre .doctype,pre .lisp .string,pre .javadoc {
+    color: #969896;
+    font-style: italic;
+  }
+
+  pre .keyword,pre .clojure .attribute,pre .winutils,pre .javascript .title,pre .addition,pre .css .tag {
+    color: #cc99cc;
+  }
+
+  pre .number { color: #f99157; }
+
+  pre .command,pre .string,pre .tag .value,pre .phpdoc,pre .tex .formula,pre .regexp,pre .hexcolor {
+    color: #8abeb7;
+  }
+
+  pre .title,pre .localvars,pre .function .title,pre .chunk,pre .decorator,pre .built_in,pre .lisp .title,pre .identifier
+  {
+    color: #b5bd68;
+  }
+
+  pre .class .keyword
+  {
+    color: #f2777a;
+  }
+
+  pre .variable,pre .lisp .body,pre .smalltalk .number,pre .constant,pre .class .title,pre .parent,pre .haskell .label,pre .id,pre .lisp .title,pre .clojure .title .built_in {
+     color: #ffcc66;
+  }
+
+  pre .tag .title,pre .rules .property,pre .django .tag .keyword,pre .clojure .title .built_in {
+    font-weight: bold;
+  }
+
+  pre .attribute,pre .clojure .title {
+    color: #81a2be;
+  }
+
+  pre .preprocessor,pre .pi,pre .shebang,pre .symbol,pre .symbol .string,pre .diff .change,pre .special,pre .attr_selector,pre .important,pre .subst,pre .cdata {
+    color: #f99157;
+  }
+
+  pre .deletion {
+    color: #dc322f;
+  }
+
+  pre .tex .formula {
+    background: #eee8d5;
+  }
 .search-query.file-search {
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
