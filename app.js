@@ -67,7 +67,18 @@ app.configure('development', function(){
   app.use(express.errorHandler())
 })
 
-app.get('/', routes.index)
+app.get('/', function(req, res) {
+    var conf = app.get('config');
+    if (conf.user) {
+        if (conf.user != '*' && conf.user == req.param('user')) {
+            routes.index(req, res);
+        } else {
+            res.send('you are not authorized!')
+        }
+    } else {
+        routes.index(req, res);
+    }
+})
 
 app.get('/not-implemented', routes.not_implemented)
 
@@ -155,17 +166,25 @@ io.sockets.on('connection', function(socket){
       var files = task.fps,
           id = task.id,
           pattern = task.pattern,
+          cs = 1,// 1 stands for case sensitive, 0 stands for case insensitive
           what = 3; //1 stands for content, 2 stands for file name, 3 stands for all
       search_task = task;
+      console.log('performing search ' + id +': ' + task.pattern);
       if (!pattern.length) return;
       if (pattern[0] === '#') {
           what = 2;
           pattern = pattern.substring(1);
       }
+      if (pattern[0] === '!') { //means case sensitive
+          cs = 1;
+      }
       files.forEach(function(file) {
           var p = file.path;
           file.searchtask_id = id;
-          if (search_task.id != id) return false;
+          if (search_task.id != id) {
+              console.log('old ' + id + ' is not identical to the current one ' + search_task.id + ' !abort!');
+              return false;
+          }
           if (what == 2 || what == 3) {
               if (p.indexOf(pattern) != -1) {
                   emit(file);
@@ -173,8 +192,16 @@ io.sockets.on('connection', function(socket){
               }
           }
           fs.readFile(path.join(froot, p), 'utf8', function(err, data){
-            if (search_task.id != id) return false;
+            if (search_task.id != id) {
+                console.log('old ' + id + ' is not identical to the current one ' + search_task.id + ' !abort!');
+                return false;
+            }
+            if (cs) {
+                data = data.toLowerCase();
+                pattern = pattern.toLowerCase();
+            }
             if (data.indexOf(pattern) != -1) {
+                console.log('get file:' + file.path)
                 emit(file);
             }
           })
@@ -183,6 +210,36 @@ io.sockets.on('connection', function(socket){
           socket.emit('response.search', res)
       }
   });
+
+    /**
+     * Dealing with image uploading
+     */
+    socket.on('request.send.file', function(name, buffer) {
+
+        //path to store uploaded files (NOTE: presumed you have created the folders)
+        var fileName = genFileName(),
+            baseName = path.relative(path.join(froot, '_img'), fileName);
+
+        fs.open(fileName, 'a', 0755, function(err, fd) {
+            if (err) throw err;
+
+            fs.write(fd, buffer, null, 'Binary', function(err, written, buff) {
+                fs.close(fd, function() {
+                    console.log('File saved successful!');
+                    socket.emit('response.send.file', baseName)
+                });
+            })
+        });
+
+        function genFileName() {
+            var time = (new Date() - 0).toString().substring(9),
+                fileName = path.join(froot, '_img', [s4(),'-',s4(),'-', time, '.png'].join('') );
+            if (fs.existsSync(fileName)){ //if already exist, re-generate it.
+             return genFileName();
+            }
+            return fileName;
+        }
+    });
 });
 
 /**
@@ -204,7 +261,7 @@ function walkAndUnlink(dirPath, regex){
   })
   
 }
-
+function s4() {return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1) }
 // Removes old css/js files.
 function cleaner(){
 

@@ -380,12 +380,23 @@ var FileManager = (function() {
 			}
 
 		},
+        /**
+         * get file list from this.pds
+         * @returns {Array}
+         */
         getFileList: function(){
             var list = [];
             $.each(this.pds, function(inx, val) {
                 if (val.type == TYPE_FILE) list.push(val);
             })
             return list;
+        },
+        /**
+         * clear the dom node reflecting files, not clear this.pds
+         */
+        clearFileWorkingList: function(){
+          var $fln = $(this.fln);
+          $fln.find('.css-file-view').html('');
         },
         addToSearchList: function(item) {
             var $fln = $(this.fln);

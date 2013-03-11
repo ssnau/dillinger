@@ -283,9 +283,6 @@ $(function(){
       //为还末创建的元素绑定事件，即由document来代理
       bindDelegation()
       
-      //第当filename有变化时，updateFilename会被调用
-      bindFilenameField()
-
       //自动保存
       autoSave()
 
@@ -615,24 +612,6 @@ $(function(){
   }
 
   /**
-   * Stash current file name in the user's profile.
-   *
-   * @param {String}  Optional string to force the value
-   * @return {Void}
-   */  
-  function updateFilename(str){
-    // Check for string because it may be keyup event object
-    var f
-    if(typeof str === 'string'){
-      f = str
-    }else
-    {
-      f = getCurrentFilenameFromField()
-    }
-    updateUserProfile( {current_filename: f })
-  }
-  
-  /**
    * XHR Post Markdown to get a md file.  Appends response to hidden iframe to 
    * automatically download the file.
    *
@@ -826,16 +805,7 @@ $(function(){
   }
 
 
-  /**
-   * Bind keyup handler to the editor.
-   *
-   * @return {Void}
-   */  
-  function bindFilenameField(){
-    $('#filename > span[contenteditable="true"]').bind('keyup', updateFilename)
-  }
 
-  
   /**
    * Bind keyup handler to the editor.
    *
@@ -862,7 +832,21 @@ $(function(){
             pattern: pattern,
             fps: fileManager.getFileList()
         })
+        fileManager.clearFileWorkingList();
     });
+
+    $("#open-image-palette").click(function(){
+        imagepalette.popup();
+        imagepalette.register(function(buffer, cb){
+            socket.emit("request.send.file", 'noname', buffer);
+            socket.on('response.send.file', function(filename){
+                cb(filename);
+                console.log('response.send.file:', filename)
+            })
+        });
+    });
+
+
     $theme
       .find('li > a')
       .bind('click', function(e){
