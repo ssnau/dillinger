@@ -5360,6 +5360,10 @@ line-height: 19px;
 overflow: auto;
 padding: 6px 10px;
 border-radius: 3px; }
+
+#preview blockquote p {
+font-size:12px;
+}
 /*
 
   Style with support for rainbow parens

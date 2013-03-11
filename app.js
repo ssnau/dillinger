@@ -33,6 +33,7 @@ app.configure(function(){
   app.use(app.router)
   app.use(require('stylus').middleware(__dirname + '/public'))
   app.use(express.static(path.join(__dirname, 'public')))
+  app.use(express.static(path.join(froot, '_img')))
 
   // __dirname: the path of the direcotry that the currently executing script resides in.
   var package = require(path.resolve(__dirname, './package.json'))

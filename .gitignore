@@ -6,3 +6,4 @@ logs/*
 public/files/*
 *-config.json
 backup/*
+/projectFiles*
