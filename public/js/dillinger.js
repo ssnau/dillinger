@@ -837,13 +837,18 @@ $(function(){
 
     $("#open-image-palette").click(function(){
         imagepalette.popup();
+        var callback = function(){};
+        // register a function to imagepalette which will be called when
+        // palette read the image and send the binary data for this function
+        // together with a callback.
         imagepalette.register(function(buffer, cb){
             socket.emit("request.send.file", 'noname', buffer);
-            socket.on('response.send.file', function(filename){
-                cb(filename);
-                console.log('response.send.file:', filename)
-            })
+            callback = cb;
         });
+        socket.on('response.send.file', function(filename){
+            callback(filename);
+            console.log('response.send.file:', filename)
+        })
     });
 
 
