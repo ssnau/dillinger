@@ -41,6 +41,7 @@ $(function(){
   var selectingfile = null //file we currently viewing, may not be editing
     , editingfile = null  //file we currently editing & viewing
     , selectingfolder = null //folder we currently working on
+    , lastSavedData = null   // cache what we have saved last time
   // Hash of themes and their respective background colors
   var bgColors = 
     {
@@ -265,10 +266,6 @@ $(function(){
       
       initUi()
 
-      hideEditor()
-
-      hideFileList()
-      
       converter = new Showdown.converter()
 
       //绑定事件，每一次keyup，都会触发preview的刷新
@@ -436,18 +433,34 @@ $(function(){
     var width = docWidth;
     var left = 0;
     var i = 0;
+
+    if ($folder.css('display') != "none") {
+        $file.css('left', (folderWidth + 20) +'px')
+        width = width - folderWidth;
+        left += folderWidth + 10;
+        i++;
+    } else {
+        $file.css('left', '0px')
+    }
+
     if ($file.css('display') != "none") {
-      width = docWidth - fileWidth;
-      left += fileWidth + 15;
+      width = width - fileWidth;
+      left += fileWidth + 10;
       i++;
     }
-    if ($folder.css('display') != "none") {
-      width = width - folderWidth;
-      left += folderWidth + 15;
-      i++;
+    if ($editor.css('display') == "none") {
+        $preview.css("left", "0%");
+    } else {
+        $preview.css("left", "50%");
+    }
+    if ($preview.css('display') == "none") {
+        $editor.css("right", "0%");
+    } else {
+        $editor.css("right", "50%");
     }
     $content.css("width", (width - 20) - 10*i + "px")
     $content.css("left", left + "px")
+
     editor.resize(true); //force to resize the editor for the new $content size
   }
 
@@ -480,8 +493,14 @@ $(function(){
 
     if (!toServer || !selectingfile) return;
 
+    //we shouldn't auto request the server since we haven't changed anything
+    if (lastSavedData == content && !isManual) {
+        console.log("do not request server to save due to we haven't change anything")
+        return;
+    }
     // save back to server
     if (fileManager.pds[selectingfile.id]) {
+      lastSavedData = content;
       socket.emit('request.save.file', 
                 {
                   'path': selectingfile.path,
@@ -691,120 +710,37 @@ $(function(){
     alert('Sad Panda - No localStorage for you!')
   }
 
-  function showEditor() {
-    $editor.css("opacity", 1);
-    $preview.css("left", "50%");
+  var windowManager = {
+      showFolder: function() {
+          $folder.show();
+      },
+      hideFolder: function() {
+          $folder.hide();
+      },
+      showFileList: function() {
+          $file.show();
+      },
+      hideFileList: function() {
+          $file.hide();
+      },
+      showEditor: function() {
+          $editor.show();
+
+      },
+      hideEditor: function() {
+          $editor.hide();
+      },
+      showPreview: function() {
+          $preview.show();
+      },
+      hidePreview: function() {
+          $preview.hide();
+      }
   }
 
-  function hideEditor() {
-    $editor.css("opacity", 0);
-    $preview.css("left", 0);
-  }
-
-  function hideFileList() {
-    $file.hide();
-    adjustWindow();
-  }
-
-  function showFileList() {
-    if ($file.css('display') == 'none') {
-      $file.show();
-      adjustWindow();
-    }
-  }
-
-  function hideFolder() {
-    $folder.hide();
-    adjustWindow();
-  }
 
 
-  /**
-   * Show the modal for the "About Dillinger" information.
-   *
-   * @return {Void}
-   */  
-  function showAboutInfo(){
-
-    $('.modal-header h3').text("What's the deal with Dillinger?")
-
-    // TODO: PULL THIS OUT AND RENDER VIA TEMPLATE FROM XHR OR STASH IN PAGE FOR SEO AND CLONE
-    var aboutContent =  "<p>Dillinger is an online cloud-enabled, HTML5, buzzword-filled Markdown editor.</p>"
-                      + "<p>Dillinger was designed and developed by <a href='http://twitter.com/joemccann'>@joemccann</a> because he needed a decent Markdown editor.</p>"
-                      + "<p>Dillinger is a 100% open source project so <a href='https://github.com/joemccann/dillinger'>fork the code</a> and contribute!</p>"
-                      + "<p>Follow Dillinger on Twitter at <a href='http://twitter.com/dillingerapp'>@dillingerapp</a></p>"
-  
-    $('.modal-body').html(aboutContent)
-
-    $('#modal-generic').modal({
-      keyboard: true,
-      backdrop: true,
-      show: true
-    })
-    
-  }
-  
-  /**
-   * Show the modal for the "Preferences".
-   *
-   * @return {Void}
-   */
-  function showPreferences(){
-
-    $('.modal-header h3').text("Preferences")
-    
-    // TODO: PULL THIS OUT AND RENDER VIA TEMPLATE FROM XHR OR STASH IN PAGE FOR SEO AND CLONE
-    var prefContent =  '<div>'
-                          +'<ul>'
-                            +'<li><a href="#" id="paper">Toggle Paper</a></li>'
-                            +'<li><a href="#" id="reset">Reset Profile</a></li>'
-                          +'</ul>'
-                        +'</div>'
-  
-    $('.modal-body').html(prefContent)
-
-    $('#modal-generic').modal({
-      keyboard: true,
-      backdrop: true,
-      show: true
-    })
-    
-  }
-  
-  
   /// UI RELATED =================
-
-  /**
-   * Toggles the paper background image. 
-   *
-   * @return {Void}
-   */  
-  function togglePaper(){
-    
-    $preview.css('backgroundImage', !profile.showPaper ? 'url("'+paperImgPath+'")' : 'url("")'  )
-
-    updateUserProfile({showPaper: !profile.showPaper})
-    
-    Notifier.showMessage(Notifier.messages.profileUpdated)
-
-  }
-  
-  /**
-   * Toggles the autosave feature. 
-   *
-   * @return {Void}
-   */  
-  function toggleAutoSave(){
-
-    $autosave.html( profile.autosave.enabled ? '<i class="icon-remove"></i>&nbsp;Disable Autosave' : '<i class="icon-ok"></i>&nbsp;Enable Autosave' )
-
-    updateUserProfile({autosave: {enabled: !profile.autosave.enabled }})
-
-    autoSave()
-  
-  }
-
-
 
   /**
    * Bind keyup handler to the editor.
@@ -846,91 +782,44 @@ $(function(){
             callback = cb;
         });
         socket.on('response.send.file', function(filename){
-            callback(filename);
+            callback('![Alt text](' + filename + ' "Optional title")');
             console.log('response.send.file:', filename)
         })
     });
 
+    function iconToggle(elem) {
+        var $e = $(elem),
+            src = $e.attr('src'),
+            hide = false;
+        if (/_blue_48/.test(src)) {
+            src = src.replace("_blue_48.png", "_48.png");
+            hide = true;
+        } else {
+            src = src.replace("_48.png", "_blue_48.png");
+            hide = false;
+        }
+        $e.attr('src', src);
+        return hide;
+    }
 
-    $theme
+    $.each(["Folder", "FileList", "Editor", "Preview"], function(inx, val){
+       $("#toggle" + val).click(function(){
+           var hide = iconToggle(this);
+           if (hide) {
+               windowManager['hide' + val]();
+           } else {
+               windowManager['show' + val]();
+           }
+           adjustWindow();
+       })
+    });
+
+      $theme
       .find('li > a')
       .bind('click', function(e){
         changeTheme(e)
         return false
       })
-
-    $('#clear')
-      .on('click', function(){
-        clearSelection()
-        return false
-      })
-
-    $("#save_dropbox")
-      .on('click', function(){
-      profile.current_filename = profile.current_filename || '/Dillinger/' + generateRandomFilename('md')
-
-      Dropbox.putMarkdownFile()
-
-      saveFile()
-      
-      return false
-    })
-
-    $(".modal-body").delegate("#paper", "click", function(){
-      togglePaper()
-      return false
-    })
-
-    $("#autosave")
-      .on('click', function(){
-        toggleAutoSave()
-        return false
-    })
-
-    $('#reset')
-      .on('click', function(){
-        resetProfile()
-        return false
-      })
-
-    $import_github
-      .on('click', function(){
-        Github.fetchRepos()
-        return false
-      })
-
-    $('#import_dropbox')
-      .on('click', function(){
-        Dropbox.searchDropbox()
-        return false
-      })
-    
-    $('#export_md')
-      .on('click', function(){
-        fetchMarkdownFile()
-        $('.dropdown').removeClass('open')
-        return false
-      })
-
-    $('#export_html')
-      .on('click', function(){
-        fetchHtmlFile()
-        $('.dropdown').removeClass('open')
-        return false
-      })
-
-    $('#preferences').
-      on('click', function(){
-        showPreferences()
-        return false
-      })
-
-    $('#about').
-      on('click', function(){
-        showAboutInfo()
-        return false
-      })
-
   } // end bindNav()
 
   /**
@@ -945,28 +834,6 @@ $(function(){
      e.preventDefault() // so we don't save the webpage - native browser functionality
     })
 
-    var status = 0;
-    key('esc', function(e){
-        switch (status) {
-            case 0:
-                hideFileList();
-                showEditor();
-                break;
-            case 1:
-                hideFileList();
-                hideEditor();
-                break;
-            case 2:
-                showFileList();
-                hideEditor();
-                break;
-            case 3:
-                showFileList();
-                showEditor();
-                break;
-        }
-        status = (status + 1)%4
-    })
   }
 
   /**

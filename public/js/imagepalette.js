@@ -12,7 +12,7 @@ imagepalette = (function(){
                 '<h3 id="myModalLabel">Image Palette</h3>',
             '</div>',
             '<div class="modal-body">',
-                '<div class="pasteCatcher" contenteditable="contenteditable" ></div>',
+                '<div class="pasteCatcher" contenteditable="" ></div>',
                 '<p><span>press Ctrl + V to paste</span></p>',
                 '<div class="image-holder" style="height:300px;overflow:scroll"></div>',
                 '<form class="form-horizontal" style="margin-bottom:0px;">',
@@ -49,6 +49,9 @@ imagepalette = (function(){
                         // to create a temporary URL to the object
                         var URLObj = window.URL || window.webkitURL;
                         var source = URLObj.createObjectURL(blob);
+                        // The URL can then be used as the source of an image
+                        createImage(source);
+
                         var reader = new FileReader();
                         reader.onload = function(e) {
                             console.log('Sending file...');
@@ -67,8 +70,6 @@ imagepalette = (function(){
                         }
                         reader.readAsBinaryString(blob);
 
-                        // The URL can then be used as the source of an image
-                        createImage(source);
                     }
                 }
             }
@@ -84,7 +85,7 @@ imagepalette = (function(){
     /* Parse the input in the paste catcher element */
     function checkInput() {
         // Store the pasted content in a variable
-        var pasteCatcher = $('.image-holder')[0];
+        var pasteCatcher = $('.pasteCatcher')[0];
         var child = pasteCatcher.childNodes[0];
 
         // Clear the inner html to make sure we're always
@@ -95,6 +96,7 @@ imagepalette = (function(){
             // If the user pastes an image, the src attribute
             // will represent the image as a base64 encoded string.
             if (child.tagName === "IMG") {
+                //TODO: How to enable firefox upload the image?
                 createImage(child.src);
             }
         }
@@ -122,10 +124,10 @@ imagepalette = (function(){
         if (!window.Clipboard) {
             // as long as we make sure it is always in focus
             var pc = $(".pasteCatcher")
-            pc.focus();
+            pc[0].focus();
             $modal.find('.modal-body').click(function(){
                 pc.focus();
-                console.log("click on modal-body and focus on pasteCatcher ")
+                console.log("click on modal-body and focus on pasteCatcher ", pc)
             });
         }
         // Add the paste event listener
