@@ -122,10 +122,12 @@ imagepalette = (function(){
             // as long as we make sure it is always in focus
             var pc = $("#pasteCatcher")
             pc.focus();
-            $modal.find('.modal-body').click(function(){pc.focus();});
+            $modal.find('.modal-body').click(function(){
+                pc.focus();
+                console.log("click on modal-body and focus on pasteCatcher ")
+            });
         }
         // Add the paste event listener
-        window.addEventListener("paste", pasteHandler);
         $modal.find(".close").click(function(){
             close();
         })
