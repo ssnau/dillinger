@@ -84,6 +84,7 @@ imagepalette = (function(){
     /* Parse the input in the paste catcher element */
     function checkInput() {
         // Store the pasted content in a variable
+        var pasteCatcher = $('.image-holder')[0];
         var child = pasteCatcher.childNodes[0];
 
         // Clear the inner html to make sure we're always
@@ -120,7 +121,7 @@ imagepalette = (function(){
         // contenteditable element that catches all pasted data
         if (!window.Clipboard) {
             // as long as we make sure it is always in focus
-            var pc = $("#pasteCatcher")
+            var pc = $(".pasteCatcher")
             pc.focus();
             $modal.find('.modal-body').click(function(){pc.focus();});
         }
