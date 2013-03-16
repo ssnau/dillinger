@@ -3,7 +3,7 @@ $(function(){
   var editor
     , converter
     , socket
-    , paperImgPath = '/img/notebook_paper_200x200.gif'
+    //, paperImgPath = '/img/notebook_paper_200x200.gif'
     , profile = 
       {
         theme: 'ace/theme/idle_fingers'
@@ -407,15 +407,6 @@ $(function(){
       adjustWindow();
       
     })
-    
-    // Set/unset paper background image on preview
-    // TODO: FIX THIS BUG
-    $preview.css('backgroundImage', profile.showPaper ? 'url("'+paperImgPath+'")' : 'url("")' )
-    
-    // Set text for dis/enable autosave
-    $autosave.html( profile.autosave.enabled ? '<i class="icon-remove"></i>&nbsp;Disable Autosave' : '<i class="icon-ok"></i>&nbsp;Enable Autosave' )
-    
-    setCurrentFilenameField()
     
     /* BEGIN RE-ARCH STUFF */
 
