@@ -20,7 +20,7 @@ app.set("config", app_config)
 var froot = app.get('config')['file_root'];
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 9420)
+  app.set('port', process.env.PORT || 9421)
   app.set('views', __dirname + '/views')
   app.set('view engine', 'ejs')
   app.use(express.favicon())
