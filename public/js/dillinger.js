@@ -608,7 +608,7 @@ $(function(){
   function previewMd(){
     
     var unmd = editor.getSession().getValue()
-      , md = converter.makeHtml(unmd)
+      , md = marked(unmd)
     
     $preview
       .html('') // unnecessary?
